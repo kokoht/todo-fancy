@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title> todo app </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="http://code.jquery.com/jquery-3.2.1.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/cerulean/bootstrap.min.css">
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style media="screen">
+      body {
+        margin: 17px;
+        padding: 3px
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="col-md-12 welcome text-center">
+        <h2>WELCOME USER </h2>
+      </div>
+      <br>
+      <h3> Search Your Todo List Here:</h3>
+      <input type="text" v-model="search" placeholder="input task name">
+      <br>
+      <h3> Your Todo List:</h3>
+      <div class="task">
+        <div class="row">
+          <div class="panel panel-info col-md-4" v-for="task in filterTasks">
+            <div class="panel-heading"> {{ task.taskname }} </div>
+            <div class="panel-description"> {{ task._id }} </div>
+            <div class="panel-footer"> Tags: {{ task.tags }} </div>
+            <!-- nanti disini task.tags e klo diclick dia muncul <showtags/> -->
+            <!-- <showtags/> -->
+          </div>
+
+          <div class="col l7 right-align">
+            <table class="highlight centered responsive-table">
+              <thead>
+                <tr>
+                  <th>Taskname</th>
+                  <th>Task id</th>
+                  <th>Tags</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="task in filterTasks" class="hoverable">
+                  <td>{{ task.taskname }}</td>
+                  <td>{{ task._id }}</td>
+                  <td>{{ task.tags }}</td>
+                  <td>
+                    <a v-on:click="updateTask(task._id)" class="btn-floating waves-effect waves-light yellow darken-1" style="margin-right: 8px"><i class="material-icons">edit</i></a>
+                    <a v-on:click="deleteTask(task._id)" class="btn-floating waves-effect waves-light red" style="margin-left: 8px"><i class="material-icons">delete</i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+
+        </div>
+      </div>
+
+
+
+<!-- place for add  -->
+<h3> Here to add item: </h3>
+<form method="post" @submit.prevent="addTask">
+  <label> Taskname: </label>
+  <input type="text" v-model="taskname" name="taskname" placeholder="new task">
+  <label> Tags: </label>
+  <input type="text" v-model="tags" name="tags" placeholder="tags">
+  <button type="submit" class="btn btn info"> add </button>
+</form>
+
+<!-- place for edit  -->
+<h3> Here to edit task: </h3>
+<form method="post" @submit.prevent="updateTask">
+  <label> Taskname: </label>
+  <input type="text" v-model="taskname" name="taskname" placeholder="new task">
+  <button type="submit" class="btn btn info"> update </button>
+</form>
+
+
+
+    </div>
+
+
+    <script src="component.js"></script>
+    <script type="text/javascript">
+      const todo = new Vue ({
+        el: '#app',
+        created: function() {
+          let self = this;
+          axios.get('http://localhost:3000/task')
+          .then( (response) => {
+            self.tasks = response.data
+          })
+        },
+        data: {
+          tasks: [],
+          search: '',
+          tags: '',
+          taskname: '',
+          editedObject: ''
+        },
+        computed: {
+          filterTasks: function() {
+            return this.tasks.filter((task) => {
+              return task.taskname.match(this.search)
+            })
+          }
+        },
+        methods: {
+          addTask: function() {
+            let self = this;
+            axios.post('http://localhost:3000/task', {
+              taskname: self.taskname,
+              tags: self.tags
+            })
+            .then( response => {
+              console.log(response.data);
+            })
+          },
+          deleteTask: function(id) {
+            let self = this;
+            axios.delete(`http://localhost:3000/task/${id}`)
+            .then( response => console.log(response))
+          },
+          updateTask: function(id) {
+            let self = this;
+            axios.put(`http://localhost:3000/task/${id}`, {
+              taskname: self.taskname
+            })
+            .then(response => console.log(response))
+          }
+        }
+      })
+
+    </script>
+  </body>
+</html>
